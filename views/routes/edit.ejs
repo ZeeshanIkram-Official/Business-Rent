@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Route — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<% locals.currentPath = '/routes'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/routes" class="btn btn-outline-secondary btn-sm">← Back</a>
+      <h5 class="mb-0 fw-bold">✏️ Edit Route — <span class="text-primary"><%= route.routeId %></span></h5>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+        <form action="/routes/<%= route._id %>?_method=PUT" method="POST">
+
+          <!-- Route Details -->
+          <div class="form-section">
+            <div class="form-section-header">🗺️ Route Details</div>
+            <div class="form-section-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Origin (From) *</label>
+                  <input type="text" name="origin" class="form-control" required value="<%= route.origin %>" id="origin" oninput="updatePreview()">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Destination (To) *</label>
+                  <input type="text" name="destination" class="form-control" required value="<%= route.destination %>" id="destination" oninput="updatePreview()">
+                </div>
+                <div class="col-12">
+                  <div class="p-2 rounded text-center fw-semibold" style="background:#eff6ff;color:#1d4ed8;font-size:15px;" id="routePreview">
+                    <%= route.origin %> → <%= route.destination %>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Default Price (SAR) *</label>
+                  <input type="number" name="price" class="form-control form-control-lg"
+                    value="<%= route.price || 0 %>" min="0" required>
+                  <small class="text-muted">Booking ke waqt change bhi ho sakta hai</small>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Notes</label>
+                  <textarea name="notes" class="form-control" rows="2"><%= route.notes || '' %></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 justify-content-end mt-3">
+            <a href="/routes" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">✅ Update Route</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function updatePreview() {
+  const o = document.getElementById('origin').value.trim() || '—';
+  const d = document.getElementById('destination').value.trim() || '—';
+  document.getElementById('routePreview').textContent = o + ' → ' + d;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<%
+const curPath = locals.currentPath || '';
+function isActive(route) {
+  return curPath.startsWith(route) ? 'active' : '';
+}
+%>
+<nav class="sidebar" id="sidebar">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <a href="/dashboard" class="brand-logo">
+      <div class="brand-icon">🚗</div>
+      <div>
+        <div class="brand-name">Al-Deafah</div>
+        <div class="brand-sub">Fleet Management</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Nav -->
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+
+    <a href="/dashboard" class="sidebar-link <%= curPath === '/dashboard' ? 'active' : '' %>">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+
+    <div class="nav-section-label">Fleet</div>
+
+    <a href="/cars" class="sidebar-link <%= isActive('/cars') %>">
+      <span class="nav-icon">🚘</span> Cars / Vehicles
+    </a>
+
+    <a href="/drivers" class="sidebar-link <%= isActive('/drivers') %>">
+      <span class="nav-icon">👤</span> Drivers
+    </a>
+
+    <div class="nav-section-label">Operations</div>
+
+    <a href="/bookings" class="sidebar-link <%= isActive('/bookings') %>">
+      <span class="nav-icon">📋</span> Bookings
+    </a>
+
+    <a href="/routes" class="sidebar-link <%= isActive('/routes') %>">
+      <span class="nav-icon">🗺️</span> Routes
+    </a>
+
+    <div class="nav-section-label">Analytics</div>
+
+    <a href="/reports" class="sidebar-link <%= isActive('/reports') %>">
+      <span class="nav-icon">📈</span> Reports
+    </a>
+
+    <a href="/expenses" class="sidebar-link <%= isActive('/expenses') %>">
+  <span class="nav-icon">💸</span> Expenses
+</a>
+
+    <% if (currentRole === 'admin') { %>
+    <div class="nav-section-label">Admin</div>
+    <a href="/users" class="sidebar-link <%= isActive('/users') %>">
+      <span class="nav-icon">⚙️</span> User Management
+    </a>
+    <% } %>
+  </div>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar"><%= (currentUser || 'U').charAt(0).toUpperCase() %></div>
+      <div class="user-info">
+        <div class="user-name"><%= currentUser || 'User' %></div>
+        <div class="user-role"><%= currentRole === 'admin' ? '🔑 Admin' : '💼 Booking Agent' %></div>
+      </div>
+      <a href="/logout" title="Logout" style="color:rgba(255,255,255,.5);font-size:18px;text-decoration:none;">🚪</a>
+    </div>
+  </div>
+</nav>

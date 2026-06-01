@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management — TransPort Pro</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body { background: #f5f7fb; font-size: 14px; }
+
+    /* ── Header Bar (matches Expenses page) ── */
+    .header-bar {
+      background: #D85A30;
+      color: white;
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 10px 10px 0 0;
+    }
+    .header-bar .title { font-size: 16px; font-weight: 600; }
+
+    /* ── Add User Card ── */
+    .add-user-card {
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+    }
+    .add-user-card .card-header-custom {
+      background: #1a1a1a;
+      color: white;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .add-user-card .card-body { padding: 20px; }
+
+    /* ── User List Card ── */
+    .user-list-card {
+      border: 1px solid #dee2e6;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+      background: white;
+    }
+
+    /* ── Table ── */
+    .pro-table { width: 100%; border-collapse: collapse; }
+    .pro-table thead th {
+      font-size: 11px; font-weight: 600;
+      color: #6c757d; background: white;
+      border-bottom: 1px solid #dee2e6;
+      padding: 12px 16px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .pro-table tbody td {
+      padding: 13px 16px; font-size: 14px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .pro-table tbody tr:last-child td { border-bottom: none; }
+    .pro-table tbody tr:hover { background: #fafafa; }
+    .pro-table tfoot td {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      background: #1a1a1a;
+      color: white;
+    }
+
+    /* ── Role Badges ── */
+    .badge-role {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-admin   { background: #e8f0fe; color: #1a3a6b; }
+    .badge-cashier { background: #e8f8ee; color: #0a3622; }
+
+    /* ── Action Buttons ── */
+    .btn-edit-xs {
+      border: 1px solid #dee2e6;
+      color: #475569; background: white;
+      border-radius: 5px; padding: 3px 10px;
+      font-size: 12px; text-decoration: none;
+      font-weight: 500;
+    }
+    .btn-edit-xs:hover { background: #f8fafc; color: #475569; }
+
+    .btn-del-xs {
+      border: 1px solid #f8d7da;
+      color: #842029; background: white;
+      border-radius: 5px; padding: 3px 10px;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-del-xs:hover { background: #fdecea; }
+
+    /* ── Form Inputs ── */
+    .form-control:focus, .form-select:focus {
+      border-color: #D85A30;
+      box-shadow: 0 0 0 0.2rem rgba(216,90,48,.15);
+    }
+
+    /* ── Submit Button ── */
+    .btn-create {
+      background: #D85A30; color: white; border: none;
+      border-radius: 6px; padding: 8px 0;
+      font-size: 13px; font-weight: 600;
+      width: 100%; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-create:hover { background: #c04a22; color: white; }
+    .btn-create:disabled { background: #e8a080; cursor: not-allowed; }
+
+    /* ── User ID Badge ── */
+    .user-id {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 5px;
+      background: #f1f5f9;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .is-invalid { border-color: #dc3545; }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: #94a3b8; }
+    .empty-icon  { font-size: 48px; margin-bottom: 10px; }
+  </style>
+</head>
+
+<body>
+
+<%- include('../partials/sidebar', { currentPage: 'users' }) %>
+
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+
+    <%- include('../partials/flash') %>
+
+    <% if (success && success.length > 0) { %>
+      <div class="alert alert-success">✅ <%= success %></div>
+    <% } %>
+    <% if (error && error.length > 0) { %>
+      <div class="alert alert-danger">❌ <%= error %></div>
+    <% } %>
+
+    <div class="row g-4">
+
+      <!-- ── ADD USER PANEL ── -->
+      <div class="col-md-5">
+        <div class="add-user-card">
+          <div class="card-header-custom">➕ Add New User</div>
+          <div class="card-body">
+            <form action="/users" method="POST" id="userForm">
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px;">Full Name</label>
+                <input type="text" name="name" class="form-control form-control-sm" placeholder="Enter full name" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px;">Username</label>
+                <input type="text" name="username" id="username" class="form-control form-control-sm" placeholder="Enter username" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px;">Password</label>
+                <div class="input-group input-group-sm">
+                  <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+                  <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                    <i id="eyeIcon" class="fa fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-semibold" style="font-size:13px;">Role</label>
+                <select name="role" class="form-select form-select-sm">
+                  <option value="cashier">🎫 Booking Agent</option>
+                  <option value="admin">🛡️ Admin</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn-create" id="submitBtn">
+                ⊕ Create User
+              </button>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── USER LIST ── -->
+      <div class="col-md-7">
+
+        <!-- Header Bar -->
+        <div class="header-bar mb-0">
+          <span class="title">👤 User Management</span>
+          <span style="font-size:12px;opacity:.85;"><%= users.filter(u=>u.isActive).length %> Active Users</span>
+        </div>
+
+        <!-- Table Card -->
+        <div class="user-list-card">
+          <% const activeUsers = users.filter(u => u.isActive); %>
+          <% if (activeUsers.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-icon">👤</div>
+              <p>No users found</p>
+            </div>
+          <% } else { %>
+          <div class="table-responsive">
+            <table class="pro-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% activeUsers.forEach(user => { %>
+                <tr>
+                  <td style="font-weight:600;"><%= user.name %></td>
+                  <td style="font-size:13px;color:#6c757d;"><%= user.username %></td>
+                  <td>
+                    <span class="badge-role badge-<%= user.role %>">
+                      <%= user.role === 'admin' ? '🛡️ Admin' : '🎫 Booking Agent' %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a href="/users/<%= user._id %>/edit" class="btn-edit-xs">Edit</a>
+                      <form action="/users/<%= user._id %>/delete" method="POST" class="d-inline">
+                        <button type="button" class="btn-del-xs" onclick="confirmDelete(this)">🗑️</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="fw-bold">Total Users</td>
+                  <td style="font-weight:700;"><%= activeUsers.length %></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /content-area -->
+</div><!-- /main-wrapper -->
+
+
+<script>
+function togglePassword(){
+  const input = document.getElementById("password");
+  const icon  = document.getElementById("eyeIcon");
+  if(input.type === "password"){
+    input.type = "text";
+    icon.classList.replace("fa-eye","fa-eye-slash");
+  } else {
+    input.type = "password";
+    icon.classList.replace("fa-eye-slash","fa-eye");
+  }
+}
+
+function confirmDelete(btn){
+  Swal.fire({
+    title: 'Delete this user?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#D85A30',
+    confirmButtonText: 'Yes, Delete'
+  }).then(result => {
+    if(result.isConfirmed) btn.closest("form").submit();
+  });
+}
+
+const form       = document.getElementById("userForm");
+const usernameInput = document.getElementById("username");
+const submitBtn  = document.getElementById("submitBtn");
+
+form.addEventListener("submit", async function(e){
+  e.preventDefault();
+  const username = usernameInput.value.trim().toLowerCase();
+  if(!username){
+    Swal.fire({ icon:'warning', title:'Username required', confirmButtonColor:'#D85A30' });
+    return;
+  }
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Checking...";
+  try {
+    const res  = await fetch(`/check-username?username=${username}`);
+    const data = await res.json();
+    if(!data.available){
+      Swal.fire({ icon:'error', title:'Username already exists', text:'Try a different username', confirmButtonColor:'#D85A30' });
+      usernameInput.classList.add("is-invalid");
+      usernameInput.focus();
+      submitBtn.disabled = false;
+      submitBtn.innerText = "⊕ Create User";
+      return;
+    }
+    Swal.fire({ icon:'success', title:'User created successfully', timer:1200, showConfirmButton:false });
+    setTimeout(() => form.submit(), 1200);
+  } catch(err){
+    Swal.fire({ icon:'error', title:'Server error', confirmButtonColor:'#D85A30' });
+    submitBtn.disabled = false;
+    submitBtn.innerText = "⊕ Create User";
+  }
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

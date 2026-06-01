@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>New Booking — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .booking-type-tiles {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .type-tile {
+      border: 2px solid #dee2e6; border-radius: 10px;
+      padding: 14px 24px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 600; color: #475569;
+      transition: border-color .12s, background .12s;
+      white-space: nowrap; user-select: none;
+    }
+    .type-tile input[type="radio"] { display: none; }
+    .type-tile.selected {
+      border-color: #D85A30; background: #fff8f5; color: #7a2f00;
+    }
+    .type-tile .tile-icon { font-size: 22px; }
+    .type-tile .tile-desc { font-size: 11px; font-weight: 400; color: #94a3b8; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <% locals.currentPath='/bookings/add'; %>
+  <%- include('../partials/sidebar') %>
+  <div class="main-wrapper">
+    <%- include('../partials/topbar') %>
+    <div class="content-area">
+      <%- include('../partials/flash') %>
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="/bookings" class="btn btn-outline-secondary btn-sm">← Back</a>
+            <h5 class="mb-0 fw-bold">🗺️ New Booking</h5>
+          </div>
+
+          <form action="/bookings" method="POST" id="bookingForm">
+
+            <!-- ── Booking Type Selection ── -->
+            <div class="form-section">
+              <div class="form-section-header">🚌 Booking Type</div>
+              <div class="form-section-body">
+                <div class="booking-type-tiles">
+                  <label class="type-tile selected" id="tile-sharing">
+                    <input type="radio" name="bookingType" value="sharing" checked
+                      onchange="onBookingTypeChange('sharing')">
+                    <div>
+                      <div class="tile-icon">💺</div>
+                    </div>
+                    <div>
+                      <div>Sharing (Per Seat)</div>
+                      <div class="tile-desc">Per passenger fare — multiple customers ek saath</div>
+                    </div>
+                  </label>
+                  <label class="type-tile" id="tile-full">
+                    <input type="radio" name="bookingType" value="full"
+                      onchange="onBookingTypeChange('full')">
+                    <div>
+                      <div class="tile-icon">🚗</div>
+                    </div>
+                    <div>
+                      <div>Full Vehicle</div>
+                      <div class="tile-desc">Poori gari book — fixed fare, passengers matter nahi</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Route Selection -->
+            <div class="form-section">
+              <div class="form-section-header">🗺️ Route</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Select Route *</label>
+                    <select name="route" id="routeSelect" class="form-select form-select-lg" onchange="fillRouteData(this)">
+                      <option value="">-- Route select karein --</option>
+                      <% routes.forEach(r => { %>
+                        <option value="<%= r._id %>"
+                          data-price="<%= r.price || 0 %>"
+                          data-origin="<%= r.origin %>"
+                          data-dest="<%= r.destination %>">
+                          <%= r.origin %> → <%= r.destination %>
+                          <% if (r.company) { %> (<%= r.company %>) <% } %>
+                          — SAR <%= (r.price || 0).toLocaleString() %>
+                        </option>
+                      <% }) %>
+                    </select>
+                    <% if (routes.length === 0) { %>
+                      <small class="text-danger">Koi route nahi hai. <a href="/routes/add">Route add karein</a></small>
+                    <% } %>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Pickup (From)</label>
+                    <input type="text" name="pickupLocation" id="pickupLocation" class="form-control" placeholder="Origin city">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Dropoff (To)</label>
+                    <input type="text" name="dropoffLocation" id="dropoffLocation" class="form-control" placeholder="Destination city">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="form-section">
+              <div class="form-section-header">👤 Customer Information</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Customer Name *</label>
+                    <input type="text" name="customerName" class="form-control" required placeholder="Full name">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Phone *</label>
+                    <input type="text" name="customerPhone" class="form-control" required placeholder="03XX-XXXXXXX">
+                  </div>
+                  <div class="col-md-4" id="passengersCol">
+                    <label class="form-label">Passengers</label>
+                    <input type="number" name="passengers" id="passengers" class="form-control"
+                      value="1" min="1" max="50" placeholder="1" oninput="calcAmount()">
+                    <small class="text-muted">Kitne seats book hon?</small>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">CNIC (Optional)</label>
+                    <input type="text" name="customerCnic" class="form-control" placeholder="35202-XXXXXXX-X">
+                  </div>
+                  <div class="col-md-8">
+                    <label class="form-label">Address (Optional)</label>
+                    <input type="text" name="customerAddress" class="form-control" placeholder="Customer address">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Travel Date & Car -->
+            <div class="form-section">
+              <div class="form-section-header">📅 Travel Details</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Travel Date *</label>
+                    <input type="date" name="travelDate" id="travelDate" class="form-control" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Select Car (Optional)</label>
+                    <!-- Hidden store — sari cars yahan hain, JS filter karega -->
+                    <div id="allCarsData" style="display:none;">
+                      <% cars.forEach(c => { %>
+                        <span
+                          data-id="<%= c._id %>"
+                          data-name="<%= c.name %> <%= c.model %> — <%= c.numberPlate %>"
+                          data-booking-type="<%= c.bookingType || 'full' %>"
+                          data-status="<%= c.status %>">
+                        </span>
+                      <% }) %>
+                    </div>
+                    <select name="car" id="carSelect" class="form-select">
+                      <option value="">-- No Car (TBD) --</option>
+                    </select>
+                    <small class="text-muted" id="carHint">Booking type k mutabiq cars filter ho rahi hain</small>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Driver (Optional)</label>
+                    <select name="driver" class="form-select">
+                      <option value="">-- No Driver (Self-Drive) --</option>
+                      <% drivers.forEach(d => { %>
+                        <option value="<%= d._id %>"><%= d.name %> — <%= d.phone %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="form-section">
+              <div class="form-section-header">💰 Payment Details</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label fw-semibold" id="fareLabel">Trip Fare — Per Seat (SAR) *</label>
+                    <input type="number" name="tripFare" id="tripFare" class="form-control form-control-lg"
+                      placeholder="0" min="0" onchange="calcAmount()" oninput="calcAmount()">
+                    <small class="text-muted" id="fareHint">Per seat fare × passengers = total fare</small>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Extra Charges (SAR)</label>
+                    <input type="number" name="extraCharges" id="extraCharges" class="form-control" value="0"
+                      min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Discount (SAR)</label>
+                    <input type="number" name="discount" id="discount" class="form-control" value="0"
+                      min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Fare Breakdown</label>
+                    <input type="text" id="fareBreakdown" class="form-control" readonly
+                      style="background:#fffbeb;color:#92400e;font-size:13px;">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Total Amount (SAR)</label>
+                    <input type="text" id="totalDisplay" class="form-control fw-bold" readonly
+                      style="background:#f0fdf4;color:#15803d;font-size:16px;">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Advance Paid (SAR)</label>
+                    <input type="number" name="advancePaid" id="advancePaid" class="form-control" value="0"
+                      min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Remaining (SAR)</label>
+                    <input type="text" id="remainingDisplay" class="form-control" readonly
+                      style="background:#fef2f2;color:#dc2626;font-weight:700;">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Payment Method</label>
+                    <select name="paymentMethod" class="form-select">
+                      <option value="cash">💵 Cash</option>
+                      <option value="bank">🏦 Bank Transfer</option>
+                      <option value="easypaisa">📱 Easypaisa</option>
+                      <option value="jazzcash">📱 JazzCash</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Booking Status</label>
+                    <select name="status" class="form-select">
+                      <option value="pending">Pending</option>
+                      <option value="confirmed" selected>Confirmed</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-section">
+              <div class="form-section-header">📝 Notes</div>
+              <div class="form-section-body">
+                <textarea name="notes" class="form-control" rows="3"
+                  placeholder="Koi special instructions ya notes..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary px-5">✅ Booking Create Karein</button>
+              <a href="/bookings" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentBookingType = 'sharing';
+
+    // ── Cars data hidden div se read karo — reliable approach ──
+    const allCarsData = Array.from(document.querySelectorAll('#allCarsData span')).map(span => ({
+      id:          span.dataset.id,
+      name:        span.dataset.name,
+      bookingType: span.dataset.bookingType,
+      status:      span.dataset.status
+    }));
+
+    function filterCars(type) {
+      const select   = document.getElementById('carSelect');
+      select.innerHTML = '<option value="">-- No Car (TBD) --</option>';
+
+      const filtered = allCarsData.filter(c => c.bookingType === type);
+
+      if (filtered.length === 0) {
+        const noOpt    = document.createElement('option');
+        noOpt.disabled = true;
+        noOpt.textContent = '⚠️ Is type ki koi car nahi';
+        select.appendChild(noOpt);
+        return;
+      }
+
+      filtered.forEach(car => {
+        const opt   = document.createElement('option');
+        opt.value   = car.id;
+        const typeLabel = car.bookingType === 'sharing' ? '💺 Sharing' : '🚗 Full';
+        const statusLabel = car.status !== 'available'
+          ? ` — ⚠️ ${car.status}` : '';
+        opt.textContent = car.name + ' (' + typeLabel + ')' + statusLabel;
+        if (car.status !== 'available') opt.style.color = '#94a3b8';
+        select.appendChild(opt);
+      });
+    }
+
+    function onBookingTypeChange(type) {
+      currentBookingType = type;
+
+      // Tile styles
+      document.getElementById('tile-sharing').classList.toggle('selected', type === 'sharing');
+      document.getElementById('tile-full').classList.toggle('selected', type === 'full');
+
+      // Passengers col
+      const passCol = document.getElementById('passengersCol');
+      if (type === 'full') {
+        passCol.style.display = 'none';
+        document.getElementById('passengers').value = 1;
+      } else {
+        passCol.style.display = '';
+      }
+
+      // Fare label & hint
+      if (type === 'full') {
+        document.getElementById('fareLabel').textContent = 'Trip Fare — Fixed (SAR) *';
+        document.getElementById('fareHint').textContent  = 'Poori gari ka fixed fare';
+      } else {
+        document.getElementById('fareLabel').textContent = 'Trip Fare — Per Seat (SAR) *';
+        document.getElementById('fareHint').textContent  = 'Per seat fare × passengers = total fare';
+      }
+
+      filterCars(type);
+      calcAmount();
+    }
+
+    function fillRouteData(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.value) return;
+      const price  = opt.dataset.price  || '';
+      const origin = opt.dataset.origin || '';
+      const dest   = opt.dataset.dest   || '';
+      if (price)  document.getElementById('tripFare').value        = price;
+      if (origin) document.getElementById('pickupLocation').value  = origin;
+      if (dest)   document.getElementById('dropoffLocation').value = dest;
+      calcAmount();
+    }
+
+    function calcAmount() {
+      const fare       = parseFloat(document.getElementById('tripFare').value)     || 0;
+      const extra      = parseFloat(document.getElementById('extraCharges').value) || 0;
+      const disc       = parseFloat(document.getElementById('discount').value)     || 0;
+      const passengers = currentBookingType === 'sharing'
+                          ? (parseInt(document.getElementById('passengers').value) || 1)
+                          : 1;
+
+      const fareTotal = fare * passengers;
+      const total     = Math.max(0, fareTotal + extra - disc);
+      const advance   = parseFloat(document.getElementById('advancePaid').value) || 0;
+      const rem       = Math.max(0, total - advance);
+
+      if (currentBookingType === 'sharing') {
+        document.getElementById('fareBreakdown').value =
+          'SAR ' + fare.toLocaleString() + ' × ' + passengers + ' seats = SAR ' + fareTotal.toLocaleString();
+      } else {
+        document.getElementById('fareBreakdown').value =
+          'Fixed fare: SAR ' + fare.toLocaleString();
+      }
+
+      document.getElementById('totalDisplay').value     = 'SAR ' + total.toLocaleString();
+      document.getElementById('remainingDisplay').value = 'SAR ' + rem.toLocaleString();
+    }
+
+    // Init
+    document.getElementById('travelDate').value = new Date().toISOString().split('T')[0];
+    onBookingTypeChange('sharing');
+    calcAmount();
+  </script>
+</body>
+</html>

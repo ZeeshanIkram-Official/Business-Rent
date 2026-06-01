@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Routes — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .header-bar {
+      background: #D85A30;
+      color: white;
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 10px 10px 0 0;
+    }
+    .header-bar .title { font-size: 16px; font-weight: 600; }
+    .search-box {
+      display: flex; align-items: center;
+      background: white; border-radius: 6px;
+      overflow: hidden; height: 34px;
+    }
+    .search-box input {
+      border: none; outline: none;
+      padding: 0 10px; font-size: 13px;
+      color: #333; width: 220px;
+    }
+    .search-box .clear-btn {
+      background: #888; border: none; color: white;
+      padding: 0 10px; height: 100%; cursor: pointer; font-size: 13px;
+    }
+    .btn-add-route {
+      background: #1a1a1a; color: white; border: none;
+      border-radius: 6px; padding: 0 14px; height: 34px;
+      font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      text-decoration: none;
+    }
+    .btn-add-route:hover { background: #333; color: white; }
+    .btn-trash-route {
+      background: #555; color: white; border: none;
+      border-radius: 6px; padding: 0 14px; height: 34px;
+      font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      text-decoration: none;
+    }
+    .btn-trash-route:hover { background: #444; color: white; }
+    .table-card {
+      border: 1px solid #dee2e6;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+      background: white;
+    }
+    .table-card table thead th {
+      font-size: 13px; font-weight: 500;
+      color: #6c757d; background: white;
+      border-bottom: 1px solid #dee2e6;
+      padding: 12px 16px;
+    }
+    .table-card table tbody td {
+      padding: 13px 16px; font-size: 14px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .table-card table tbody tr:last-child td { border-bottom: none; }
+    .table-card table tbody tr:hover { background: #fafafa; }
+    td.route-name { font-weight: 600; }
+
+    /* Toggle Switch */
+    .toggle-switch { position: relative; width: 42px; height: 24px; display: inline-block; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #ccc; border-radius: 24px; transition: .25s;
+    }
+    .toggle-slider:before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: .25s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: #D85A30; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+    /* Action Buttons */
+    .btn-edit-route {
+      background: #E9A800; border: none; color: white;
+      border-radius: 6px; width: 34px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px;
+      text-decoration: none;
+    }
+    .btn-edit-route:hover { background: #cc9200; color: white; }
+    .btn-delete-route {
+      background: #D85A30; border: none; color: white;
+      border-radius: 6px; width: 34px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px;
+    }
+    .btn-delete-route:hover { background: #b84a22; }
+  </style>
+</head>
+<body>
+<% locals.currentPath = '/routes'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <!-- Header Bar -->
+    <div class="header-bar mb-0">
+      <span class="title">Routes</span>
+      <div class="d-flex align-items-center gap-2">
+
+        <!-- Search -->
+        <form method="GET" action="/routes" class="d-flex align-items-center m-0">
+          <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#888"
+              style="margin-left:8px; flex-shrink:0;" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+            <input type="text" name="search" placeholder="Search from or to location."
+              value="<%= filters.search %>">
+            <% if (filters.search) { %>
+            <a href="/routes" class="clear-btn">✕</a>
+            <% } %>
+          </div>
+        </form>
+
+        <!-- Add Route -->
+        <% if (currentRole === 'admin') { %>
+        <a href="/routes/add" class="btn-add-route">
+          ⊕ Add Route
+        </a>
+      
+        <% } %>
+
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <% if (routes.length === 0) { %>
+      <div class="text-center py-5 text-muted">
+        <div style="font-size:48px;">🗺️</div>
+        <p class="mt-2">No routes found.
+          <% if (currentRole === 'admin') { %>
+          <a href="/routes/add">Add first route</a>
+          <% } %>
+        </p>
+      </div>
+      <% } else { %>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th style="width:52px;">No.</th>
+              <th>Company</th>
+              <th>Route No</th>
+              <th>Route</th>
+              <th>Price (SAR)</th>
+              <th style="width:90px;">Status</th>
+              <% if (currentRole === 'admin') { %>
+              <th style="width:110px;">Actions</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% routes.forEach((r, i) => { %>
+            <tr>
+              <td class="text-muted"><%= i + 1 %></td>
+              <td><%= r.company || 'N/A' %></td>
+              <td><%= r.routeId %></td>
+              <td class="route-name"><%= r.origin %> → <%= r.destination %></td>
+              <td class="fw-semibold text-success">SAR <%= (r.price || 0).toLocaleString() %></td>
+              <td>
+                <form action="/routes/<%= r._id %>/toggle?_method=PUT" method="POST">
+                  <label class="toggle-switch" title="<%= r.isActive ? 'Active' : 'Inactive' %>">
+                    <input type="checkbox" <%= r.isActive ? 'checked' : '' %>
+                      onchange="this.closest('form').submit()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </form>
+              </td>
+              <% if (currentRole === 'admin') { %>
+              <td>
+                <div class="d-flex gap-1">
+                  <a href="/routes/<%= r._id %>/edit" class="btn-edit-route" title="Edit">✏️</a>
+                  <form action="/routes/<%= r._id %>?_method=DELETE" method="POST"
+                    onsubmit="return confirm('Are you sure you want to permanently delete this route?')">
+                    <button type="submit" class="btn-delete-route" title="Delete">🗑</button>
+                  </form>
+                </div>
+              </td>
+              <% } %>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </div><!-- /table-card -->
+
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

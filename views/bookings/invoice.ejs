@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Invoice <%= booking.bookingId %> — Al Deafah</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f1f5f9;font-family:'DM Sans',sans-serif;color:#0f172a;}
+    @media print{
+      .no-print{display:none!important;}
+      body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      .invoice-paper{box-shadow:none!important;margin:0!important;border-radius:0!important;}
+    }
+    .no-print{padding:14px;text-align:center;background:#fff;border-bottom:1px solid #e2e8f0;}
+    .invoice-paper{max-width:860px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,.08);}
+
+    /* HEADER */
+    .inv-header{background:#1a3c5e;color:#fff;padding:28px 36px;}
+    .inv-header-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+    .co-logo-wrap{display:flex;align-items:center;gap:14px;}
+    .co-logo-circle{width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .co-logo-circle img{width:36px;height:36px;object-fit:contain;}
+    .co-logo-circle .ti{font-size:28px;color:rgba(255,255,255,.9);}
+    .co-name{font-size:22px;font-weight:600;letter-spacing:-.3px;line-height:1.2;}
+    .co-sub{font-size:12px;opacity:.65;margin-top:3px;}
+    .co-meta{font-size:12px;opacity:.55;margin-top:6px;display:flex;flex-direction:column;gap:3px;}
+    .co-meta-row{display:flex;align-items:center;gap:6px;}
+    .co-meta-row .ti{font-size:13px;opacity:.7;}
+    .inv-tag{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;opacity:.55;margin-bottom:4px;}
+    .inv-num{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
+    .inv-meta{font-size:12px;opacity:.6;margin-top:2px;}
+    .status-pill{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:500;}
+    .status-confirmed{background:rgba(34,197,94,.2);color:#bbf7d0;}
+    .status-pending{background:rgba(251,191,36,.2);color:#fde68a;}
+    .status-cancelled{background:rgba(239,68,68,.2);color:#fecaca;}
+    .status-completed{background:rgba(96,165,250,.2);color:#bfdbfe;}
+
+    /* BODY */
+    .inv-body{padding:28px 36px;}
+
+    /* INFO GRID */
+    .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px;}
+    .ibox{background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;}
+    .ibox-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:600;margin-bottom:10px;}
+    .irow{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;}
+    .irow .ti{color:#94a3b8;font-size:15px;margin-top:1px;flex-shrink:0;width:16px;}
+    .iv{font-size:13px;color:#334155;line-height:1.4;}
+    .iv.b{font-weight:600;font-size:14px;color:#0f172a;}
+    .plate{display:inline-block;background:#1a3c5e;color:#fff;font-family:'DM Mono',monospace;font-size:12px;padding:2px 8px;border-radius:4px;margin-top:2px;letter-spacing:.5px;}
+
+    /* ROUTE BAR */
+    .route-bar{display:flex;align-items:stretch;background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:22px;}
+    .rp{flex:1;padding:16px 20px;}
+    .rp-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:600;margin-bottom:5px;}
+    .rp-city{font-size:18px;font-weight:600;color:#0f172a;}
+    .rp-date{font-size:12px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:5px;}
+    .rp-date .ti{font-size:13px;}
+    .rarrow{display:flex;align-items:center;justify-content:center;padding:0 18px;color:#94a3b8;font-size:20px;border-left:0.5px solid #e2e8f0;border-right:0.5px solid #e2e8f0;}
+    .rinfo{padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:130px;border-left:0.5px solid #e2e8f0;}
+    .rinfo-item .rl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:600;margin-bottom:2px;}
+    .rinfo-item .rv{font-size:13px;font-weight:500;color:#0f172a;}
+
+    /* TABLE */
+    .sec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:600;margin-bottom:10px;}
+    .tbl-wrap{border:0.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:16px;}
+    .fare-tbl{width:100%;border-collapse:collapse;}
+    .fare-tbl thead tr{background:#1a3c5e;}
+    .fare-tbl thead th{color:rgba(255,255,255,.85);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;padding:11px 16px;text-align:left;}
+    .fare-tbl thead th:last-child{text-align:right;}
+    .fare-tbl tbody td{padding:13px 16px;font-size:13px;color:#334155;border-bottom:0.5px solid #f1f5f9;}
+    .fare-tbl tbody td:last-child{text-align:right;font-weight:600;color:#0f172a;}
+    .fare-tbl tbody tr:last-child td{border-bottom:none;}
+    .td-sub{font-size:11px;color:#94a3b8;margin-top:2px;}
+    .extra-row td{background:#fffbeb;}
+    .disc-row td{background:#f0fdf4;}
+    .disc-row td:last-child{color:#16a34a!important;}
+
+    /* TOTALS */
+    .total-bar{background:#1a3c5e;color:#fff;border-radius:10px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+    .total-bar .tl{font-size:11px;opacity:.7;letter-spacing:.3px;}
+    .total-bar .ta{font-size:24px;font-weight:600;font-family:'DM Mono',monospace;}
+    .bal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+    .bal-box{border-radius:10px;padding:14px 18px;}
+    .bal-box.paid{background:#f0fdf4;border:0.5px solid #bbf7d0;}
+    .bal-box.due{background:#fef2f2;border:0.5px solid #fecaca;}
+    .bal-lbl{font-size:11px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+    .bal-lbl .ti{font-size:14px;}
+    .bal-box.paid .bal-lbl{color:#15803d;}
+    .bal-box.due .bal-lbl{color:#dc2626;}
+    .bal-amt{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;}
+    .bal-box.paid .bal-amt{color:#15803d;}
+    .bal-box.due .bal-amt{color:#dc2626;}
+
+    /* METHOD STRIP */
+    .method-strip{display:flex;align-items:center;gap:8px;background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:13px;color:#475569;flex-wrap:wrap;}
+    .method-strip .ti{font-size:16px;color:#64748b;}
+    .method-strip .ms-sep{margin:0 8px;color:#cbd5e1;}
+
+    /* PAYMENT HISTORY */
+    .ph-tbl{width:100%;border-collapse:collapse;}
+    .ph-tbl thead tr{background:#f8fafc;}
+    .ph-tbl thead th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;padding:9px 14px;text-align:left;border-bottom:0.5px solid #e2e8f0;font-weight:600;}
+    .ph-tbl tbody td{padding:10px 14px;font-size:13px;color:#334155;border-bottom:0.5px solid #f1f5f9;}
+    .ph-tbl tbody tr:last-child td{border-bottom:none;}
+    .method-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:#f1f5f9;color:#64748b;text-transform:capitalize;}
+
+    /* NOTES */
+    .notes-box{background:#fffbeb;border:0.5px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:20px;}
+    .notes-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+    .notes-lbl .ti{font-size:13px;}
+    .notes-txt{font-size:13px;color:#78350f;line-height:1.5;}
+
+    /* FOOTER */
+    .inv-footer{border-top:1px solid #f1f5f9;padding:20px 36px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;background:#fafcff;}
+    .footer-note{font-size:11px;color:#94a3b8;line-height:1.7;}
+    .footer-note strong{color:#64748b;}
+    .sig-wrap{text-align:right;}
+    .sig-space{height:40px;}
+    .sig-line-txt{font-size:11px;color:#94a3b8;border-top:1px solid #cbd5e1;padding-top:6px;min-width:160px;}
+  </style>
+</head>
+<body>
+
+<div class="no-print">
+  <button onclick="window.print()" class="btn btn-primary btn-sm me-2">
+    <i class="ti ti-printer" style="font-size:14px;vertical-align:-2px;margin-right:4px;"></i>Print Invoice
+  </button>
+  <a href="/bookings/<%= booking._id %>" class="btn btn-outline-secondary btn-sm">
+    <i class="ti ti-arrow-left" style="font-size:14px;vertical-align:-2px;margin-right:4px;"></i>Back to Booking
+  </a>
+</div>
+
+<div class="invoice-paper">
+
+  <!-- HEADER -->
+  <div class="inv-header">
+    <div class="inv-header-row">
+      <div>
+        <div class="co-logo-wrap">
+          <div class="co-logo-circle">
+            <%# If you have a logo file, replace below with: <img src="/uploads/logo/logo.png" alt="Al Deafah Logo"> %>
+            <i class="ti ti-steering-wheel"></i>
+          </div>
+          <div>
+            <div class="co-name">Al Deafah</div>
+            <div class="co-sub">Professional Car Rental & Transport Services</div>
+          </div>
+        </div>
+        <div class="co-meta">
+          <div class="co-meta-row">
+            <i class="ti ti-map-pin"></i>
+            <span>Lahore, Punjab, Pakistan</span>
+          </div>
+          <div class="co-meta-row">
+            <i class="ti ti-phone"></i>
+            <span>+92 300 0000000</span>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div class="inv-tag">Invoice</div>
+        <div class="inv-num"><%= booking.bookingId %></div>
+        <div class="inv-meta">
+          <i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px;margin-right:3px;"></i>
+          Issued: <%= moment(booking.createdAt).format('DD MMM YYYY') %>
+        </div>
+        <div>
+          <span class="status-pill status-<%= booking.status %>">
+            <i class="ti ti-circle-filled" style="font-size:8px;vertical-align:1px;margin-right:3px;"></i>
+            <%= booking.status.toUpperCase() %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inv-body">
+
+    <!-- CUSTOMER + VEHICLE -->
+    <div class="info-grid">
+      <div class="ibox">
+        <div class="ibox-lbl">Customer Information</div>
+        <div class="irow">
+          <i class="ti ti-user"></i>
+          <span class="iv b"><%= booking.customerName %></span>
+        </div>
+        <div class="irow">
+          <i class="ti ti-phone"></i>
+          <span class="iv"><%= booking.customerPhone %></span>
+        </div>
+        <% if (booking.customerCnic) { %>
+        <div class="irow">
+          <i class="ti ti-id"></i>
+          <span class="iv">CNIC: <%= booking.customerCnic %></span>
+        </div>
+        <% } %>
+        <% if (booking.customerAddress) { %>
+        <div class="irow">
+          <i class="ti ti-map-pin"></i>
+          <span class="iv"><%= booking.customerAddress %></span>
+        </div>
+        <% } %>
+        <% if (booking.passengers) { %>
+        <div class="irow">
+          <i class="ti ti-users"></i>
+          <span class="iv">Passengers: <%= booking.passengers %></span>
+        </div>
+        <% } %>
+      </div>
+      <div class="ibox">
+        <div class="ibox-lbl">Vehicle & Driver</div>
+        <% if (booking.car) { %>
+        <div class="irow">
+          <i class="ti ti-car"></i>
+          <span class="iv b"><%= booking.car.name %> <%= booking.car.model %></span>
+        </div>
+        <div class="irow">
+          <i class="ti ti-license"></i>
+          <span class="plate"><%= booking.car.numberPlate %></span>
+        </div>
+        <% if (booking.car.color) { %>
+        <div class="irow">
+          <i class="ti ti-palette"></i>
+          <span class="iv"><%= booking.car.color %></span>
+        </div>
+        <% } %>
+        <% } %>
+        <% if (booking.driver) { %>
+        <div class="irow" style="margin-top:6px;">
+          <i class="ti ti-steering-wheel"></i>
+          <span class="iv"><%= booking.driver.name %> &mdash; <%= booking.driver.phone %></span>
+        </div>
+        <% } else { %>
+        <div class="irow" style="margin-top:6px;">
+          <i class="ti ti-steering-wheel"></i>
+          <span class="iv" style="color:#94a3b8;">Self-Drive</span>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ROUTE BAR -->
+    <div class="sec-lbl">Trip Details</div>
+    <div class="route-bar">
+      <div class="rp">
+        <div class="rp-lbl">From (Pickup)</div>
+        <div class="rp-city"><%= booking.pickupLocation || '—' %></div>
+        <div class="rp-date">
+          <i class="ti ti-calendar"></i>
+          <%= moment(booking.travelDate || booking.startDate).format('DD MMM YYYY') %>
+        </div>
+      </div>
+      <div class="rarrow">
+        <i class="ti ti-arrow-right"></i>
+      </div>
+      <div class="rp">
+        <div class="rp-lbl">To (Dropoff)</div>
+        <div class="rp-city"><%= booking.dropoffLocation || '—' %></div>
+        <% if (booking.endDate && booking.endDate !== booking.startDate) { %>
+        <div class="rp-date">
+          <i class="ti ti-calendar"></i>
+          <%= moment(booking.endDate).format('DD MMM YYYY') %>
+        </div>
+        <% } %>
+      </div>
+      <div class="rinfo">
+        <div class="rinfo-item">
+          <div class="rl">Booking Type</div>
+          <div class="rv"><%= booking.bookingType === 'daily' ? 'Daily Rental' : 'Trip Package' %></div>
+        </div>
+        <% if (booking.passengers) { %>
+        <div class="rinfo-item">
+          <div class="rl">Passengers</div>
+          <div class="rv"><%= booking.passengers %> pax</div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- CHARGES TABLE -->
+    <div class="sec-lbl">Charges Breakdown</div>
+    <div class="tbl-wrap">
+      <table class="fare-tbl">
+        <thead>
+          <tr>
+            <th style="width:45%;">Description</th>
+            <th>Route</th>
+            <th>Travel Date</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (booking.bookingType === 'daily') { %>
+          <tr>
+            <td>
+              Daily Rental — <%= booking.car ? booking.car.name + ' ' + booking.car.model : '' %>
+              <div class="td-sub"><%= booking.numberOfDays %> day<%= booking.numberOfDays > 1 ? 's' : '' %> &times; SAR <%= (booking.ratePerDay || 0).toLocaleString() %>/day</div>
+            </td>
+            <td><%= booking.pickupLocation || '—' %></td>
+            <td><%= moment(booking.startDate).format('DD MMM YY') %> &rarr; <%= moment(booking.endDate).format('DD MMM YY') %></td>
+            <td>SAR <%= ((booking.ratePerDay || 0) * (booking.numberOfDays || 1)).toLocaleString() %></td>
+          </tr>
+          <% } else { %>
+          <tr>
+            <td>
+              Trip Fare — <%= booking.car ? booking.car.name + ' ' + booking.car.model : '' %>
+              <div class="td-sub">Route: <%= booking.pickupLocation || 'Pickup' %> &rarr; <%= booking.dropoffLocation || 'Destination' %></div>
+            </td>
+            <td><%= booking.pickupLocation || '—' %> &rarr; <%= booking.dropoffLocation || '—' %></td>
+            <td><%= moment(booking.travelDate || booking.startDate).format('DD MMM YYYY') %></td>
+            <td>SAR <%= (booking.tripFare || 0).toLocaleString() %></td>
+          </tr>
+          <% } %>
+          <% if (booking.extraCharges > 0) { %>
+          <tr class="extra-row">
+            <td>Extra Charges<div class="td-sub">Additional costs</div></td>
+            <td>—</td><td>—</td>
+            <td style="color:#92400e;">+ SAR <%= booking.extraCharges.toLocaleString() %></td>
+          </tr>
+          <% } %>
+          <% if (booking.discount > 0) { %>
+          <tr class="disc-row">
+            <td>Discount<div class="td-sub">Applied discount</div></td>
+            <td>—</td><td>—</td>
+            <td>− SAR <%= booking.discount.toLocaleString() %></td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="total-bar">
+      <div class="tl">Total Amount</div>
+      <div class="ta">SAR <%= (booking.totalAmount || 0).toLocaleString() %></div>
+    </div>
+
+    <!-- PAID / DUE -->
+    <div class="bal-grid">
+      <div class="bal-box paid">
+        <div class="bal-lbl">
+          <i class="ti ti-circle-check"></i> Advance Paid
+        </div>
+        <div class="bal-amt">SAR <%= (booking.advancePaid || 0).toLocaleString() %></div>
+      </div>
+      <div class="bal-box due">
+        <div class="bal-lbl">
+          <i class="ti ti-alert-circle"></i> Balance Due
+        </div>
+        <div class="bal-amt">SAR <%= (booking.remainingAmount || 0).toLocaleString() %></div>
+      </div>
+    </div>
+
+    <!-- PAYMENT METHOD + STATUS -->
+    <div class="method-strip">
+      <i class="ti ti-credit-card"></i>
+      <strong>Payment Method:</strong>
+      <span style="text-transform:capitalize;"><%= booking.paymentMethod || 'Cash' %></span>
+      <span class="ms-sep">|</span>
+      <i class="ti ti-clipboard-list"></i>
+      <strong>Status:</strong>
+      <span style="text-transform:capitalize;font-weight:600;color:<%= booking.status === 'confirmed' ? '#15803d' : booking.status === 'cancelled' ? '#dc2626' : '#92400e' %>">
+        <%= booking.status %>
+      </span>
+    </div>
+
+    <!-- PAYMENT HISTORY -->
+    <% if (booking.paymentHistory && booking.paymentHistory.length > 0) { %>
+    <div class="sec-lbl">Payment History</div>
+    <div class="tbl-wrap" style="margin-bottom:20px;">
+      <table class="ph-tbl">
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Received By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% booking.paymentHistory.forEach(p => { %>
+          <tr>
+            <td><%= moment(p.receivedAt).format('DD MMM YYYY, hh:mm A') %></td>
+            <td style="font-weight:600;color:#15803d;">SAR <%= (p.amount || 0).toLocaleString() %></td>
+            <td><span class="method-badge"><%= p.method %></span></td>
+            <td><%= p.receivedBy || '—' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+
+    <!-- NOTES -->
+    <% if (booking.notes) { %>
+    <div class="notes-box">
+      <div class="notes-lbl">
+        <i class="ti ti-notes"></i> Notes
+      </div>
+      <div class="notes-txt"><%= booking.notes %></div>
+    </div>
+    <% } %>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="inv-footer">
+    <div class="footer-note">
+      <div>Generated by <strong>Al Deafah</strong> &bull; <%= moment().format('DD MMM YYYY, hh:mm A') %></div>
+      <div>Thank you for choosing our services!</div>
+    </div>
+    <div class="sig-wrap">
+      <div class="sig-space"></div>
+      <div class="sig-line-txt">Authorized Signature</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  if (window.location.search.includes('autoprint')) window.print();
+</script>
+</body>
+</html>

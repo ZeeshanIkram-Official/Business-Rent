@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= driver.name %> — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Page Header ── */
+    .page-header {
+      display: flex; align-items: center;
+      gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .btn-back {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      text-decoration: none; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-back:hover { background: #f8fafc; color: #475569; }
+    .page-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; flex: 1; }
+
+    /* ── Status Pill ── */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .status-pill.active   { background: #d1e7dd; color: #0a3622; }
+    .status-pill.inactive { background: #fee2e2; color: #991b1b; }
+
+    /* ── Section Cards ── */
+    .section-card {
+      background: white; border-radius: 10px;
+      border: 1px solid #dee2e6; overflow: hidden; margin-bottom: 18px;
+    }
+    .section-header {
+      background: #D85A30; color: white;
+      padding: 0 20px; height: 46px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 14px; font-weight: 600; gap: 8px;
+    }
+    .section-body { padding: 20px; }
+
+    /* ── Driver Profile Card ── */
+    .profile-top {
+      text-align: center; padding: 24px 20px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .driver-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #fde8dd;
+      margin: 0 auto 14px; display: block;
+    }
+    .driver-avatar-placeholder {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: #f1f5f9; border: 3px solid #fde8dd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin: 0 auto 14px;
+    }
+    .driver-name { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+    .driver-phone { color: #64748b; font-size: 13px; margin-top: 3px; }
+    .driver-city  { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: flex; padding: 16px 20px; gap: 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .stat-item {
+      flex: 1; text-align: center;
+      border-right: 1px solid #f1f5f9;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-val { font-size: 22px; font-weight: 700; }
+    .stat-val.blue  { color: #2563eb; }
+    .stat-val.green { color: #16a34a; }
+    .stat-lbl { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Info Table ── */
+    .info-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+    .info-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table .lbl { color: #94a3b8; font-weight: 500; width: 42%; }
+    .info-table .val { color: #1a1a1a; font-weight: 500; }
+    .info-table .val.green { color: #15803d; font-weight: 600; }
+
+    /* ── License type badge ── */
+    .license-badge {
+      background: #fde8dd; color: #7a2f00;
+      padding: 2px 10px; border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── Emergency box ── */
+    .emergency-box {
+      background: #fff8f5; border: 1px solid #fde8dd;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 13px; color: #475569; margin-top: 14px;
+    }
+    .emergency-box strong { color: #D85A30; }
+
+    /* ── Pro Table ── */
+    .pro-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .pro-table thead tr { background: #fff8f5; }
+    .pro-table th {
+      padding: 10px 14px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      color: #D85A30; border-bottom: 2px solid #fde8dd; white-space: nowrap;
+    }
+    .pro-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .pro-table tbody tr:hover { background: #fffaf8; }
+    .pro-table tbody tr:last-child td { border-bottom: none; }
+
+    .text-money { font-weight: 600; color: #15803d; white-space: nowrap; }
+    .booking-id { font-weight: 700; color: #D85A30; text-decoration: none; }
+    .booking-id:hover { text-decoration: underline; }
+
+    .b-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: capitalize;
+    }
+    .b-badge.confirmed  { background: #d1e7dd; color: #0a3622; }
+    .b-badge.pending    { background: #fff9e6; color: #856404; }
+    .b-badge.completed  { background: #e0e7ff; color: #3730a3; }
+    .b-badge.cancelled  { background: #fee2e2; color: #991b1b; }
+    .b-badge.active     { background: #fde8dd; color: #7a2f00; }
+
+    .empty-row td {
+      text-align: center; padding: 32px 0;
+      color: #b0b8c1; font-size: 14px;
+    }
+
+    /* ── Edit button ── */
+    .btn-edit {
+      border: 1px solid #D85A30; color: #D85A30; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      font-weight: 600; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: background .15s, color .15s;
+    }
+    .btn-edit:hover { background: #D85A30; color: white; }
+  </style>
+</head>
+<body>
+<% locals.currentPath = '/drivers'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <a href="/drivers" class="btn-back">← Back</a>
+      <h5 class="page-title"><%= driver.name %></h5>
+      <span class="status-pill <%= driver.isActive ? 'active' : 'inactive' %>">
+        ● <%= driver.isActive ? 'Active' : 'Inactive' %>
+      </span>
+      <% if (currentRole === 'admin') { %>
+        <a href="/drivers/<%= driver._id %>/edit" class="btn-edit">✏️ Edit</a>
+      <% } %>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- ── Left: Profile ── -->
+      <div class="col-12 col-md-4">
+
+        <!-- Profile Card -->
+        <div class="section-card">
+          <div class="section-header">👤 Driver Profile</div>
+
+          <div class="profile-top">
+            <% if (driver.driverImage) { %>
+              <img src="<%= driver.driverImage %>" class="driver-avatar" alt="<%= driver.name %>">
+            <% } else { %>
+              <div class="driver-avatar-placeholder">👤</div>
+            <% } %>
+            <div class="driver-name"><%= driver.name %></div>
+            <div class="driver-phone">📞 <%= driver.phone %></div>
+            <div class="driver-city">🏙️ <%= driver.city || '' %></div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val blue"><%= totalTrips %></div>
+              <div class="stat-lbl">Total Trips</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val green"><%= driver.experienceYears || 0 %>y</div>
+              <div class="stat-lbl">Experience</div>
+            </div>
+          </div>
+
+          <div class="section-body">
+            <table class="info-table">
+              <tr>
+                <td class="lbl">CNIC</td>
+                <td class="val"><%= driver.cnic || '—' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">License No.</td>
+                <td class="val"><%= driver.licenseNumber %></td>
+              </tr>
+              <tr>
+                <td class="lbl">License Type</td>
+                <td class="val"><span class="license-badge"><%= driver.licenseType %></span></td>
+              </tr>
+              <tr>
+                <td class="lbl">Expiry</td>
+                <td class="val">
+                  <% if (driver.licenseExpiry) { %>
+                    <% const expired = new Date(driver.licenseExpiry) < new Date(); %>
+                    <span style="<%= expired ? 'color:#dc2626;font-weight:700;' : '' %>">
+                      <%= moment(driver.licenseExpiry).format('DD MMM YYYY') %>
+                      <%= expired ? ' ❌' : '' %>
+                    </span>
+                  <% } else { %>—<% } %>
+                </td>
+              </tr>
+              <tr>
+                <td class="lbl">WhatsApp</td>
+                <td class="val"><%= driver.whatsapp || '—' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Address</td>
+                <td class="val"><%= driver.address || '—' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Salary</td>
+                <td class="val green">SAR <%= (driver.salary || 0).toLocaleString() %>
+                  <span style="font-weight:400;color:#64748b;font-size:11px;">(<%= driver.salaryType %>)</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="lbl">Joined</td>
+                <td class="val"><%= moment(driver.joiningDate).format('DD MMM YYYY') %></td>
+              </tr>
+            </table>
+
+            <% if (driver.emergencyContactName) { %>
+              <div class="emergency-box">
+                <strong>🆘 Emergency:</strong><br>
+                <%= driver.emergencyContactName %>
+                <% if (driver.emergencyRelation) { %>(<%= driver.emergencyRelation %>)<% } %><br>
+                📞 <%= driver.emergencyContactPhone || '—' %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right: Booking History ── -->
+      <div class="col-12 col-md-8">
+        <div class="section-card">
+          <div class="section-header">
+            <span>📋 Booking History</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="pro-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Customer</th>
+                  <th>Car</th>
+                  <th>Dates</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (bookings.length === 0) { %>
+                  <tr class="empty-row">
+                    <td colspan="6">👤 No bookings yet for this driver</td>
+                  </tr>
+                <% } %>
+                <% bookings.forEach(b => { %>
+                <tr>
+                  <td><a href="/bookings/<%= b._id %>" class="booking-id"><%= b.bookingId %></a></td>
+                  <td><%= b.customerName %></td>
+                  <td><%= b.car ? b.car.name : '—' %></td>
+                  <td style="font-size:12px;color:#64748b;">
+                    <%= moment(b.startDate).format('DD MMM') %> →
+                    <%= moment(b.endDate).format('DD MMM YY') %>
+                  </td>
+                  <td class="text-money">SAR <%= b.totalAmount?.toLocaleString() %></td>
+                  <td><span class="b-badge <%= b.status %>"><%= b.status %></span></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Add Expense — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Page Header ── */
+    .page-header {
+      display: flex; align-items: center;
+      gap: 12px; margin-bottom: 24px;
+    }
+    .btn-back {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      text-decoration: none; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-back:hover { background: #f8fafc; color: #475569; }
+    .page-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; }
+
+    /* ── Section Card ── */
+    .section-card {
+      background: white; border-radius: 10px;
+      border: 1px solid #dee2e6; overflow: hidden; margin-bottom: 18px;
+    }
+    .section-header {
+      background: #D85A30; color: white;
+      padding: 0 20px; height: 46px;
+      display: flex; align-items: center;
+      font-size: 14px; font-weight: 600; gap: 8px;
+    }
+    .section-body { padding: 20px; }
+
+    /* ── Form Elements ── */
+    .form-label {
+      font-size: 12px; font-weight: 600;
+      color: #374151; margin-bottom: 5px;
+    }
+    .form-label .req { color: #D85A30; margin-left: 2px; }
+    .form-control, .form-select {
+      border: 1px solid #dee2e6; border-radius: 7px;
+      font-size: 13px; padding: 8px 11px;
+      color: #1a1a1a; background: #fafafa;
+      transition: border-color .15s, background .15s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #D85A30; background: white;
+      box-shadow: 0 0 0 3px rgba(216,90,48,.1); outline: none;
+    }
+    .form-control::placeholder { color: #b0b8c1; }
+
+    /* ── Input with icon ── */
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon {
+      position: absolute; left: 11px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px; pointer-events: none;
+    }
+    .input-wrap .form-control,
+    .input-wrap .form-select { padding-left: 34px; }
+
+    /* ── Amount field ── */
+    .amount-field { background: #f0fdf4 !important; color: #15803d !important; font-weight: 600; }
+    .amount-field:focus { border-color: #16a34a !important; box-shadow: 0 0 0 3px rgba(22,163,74,.1) !important; }
+
+    /* ── Category tiles ── */
+    .tile-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tile-option {
+      border: 2px solid #dee2e6; border-radius: 8px;
+      padding: 8px 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; font-weight: 500; color: #475569;
+      transition: border-color .12s, background .12s;
+      white-space: nowrap;
+    }
+    .tile-option input[type="radio"] { display: none; }
+    .tile-option.selected {
+      border-color: #D85A30; background: #fff8f5; color: #7a2f00;
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      border: none; border-top: 1px solid #f1f5f9; margin: 18px 0;
+    }
+
+    /* ── Optional label ── */
+    .opt-label { font-weight: 400; color: #94a3b8; font-size: 11px; }
+
+    /* ── Buttons ── */
+    .btn-submit {
+      background: #D85A30; color: white; border: none;
+      border-radius: 7px; padding: 11px 36px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px;
+      transition: background .15s;
+    }
+    .btn-submit:hover { background: #b94a24; }
+    .btn-cancel {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 7px; padding: 11px 20px;
+      font-size: 14px; text-decoration: none; font-weight: 500;
+    }
+    .btn-cancel:hover { background: #f8fafc; color: #475569; }
+  </style>
+</head>
+<body>
+<% locals.currentPath = '/expenses'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-8">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <a href="/expenses" class="btn-back">← Back</a>
+          <h5 class="page-title">💸 Add Expense</h5>
+        </div>
+
+        <form action="/expenses" method="POST">
+
+          <!-- ── Expense Details ── -->
+          <div class="section-card">
+            <div class="section-header">💸 Expense Details</div>
+            <div class="section-body">
+              <div class="row g-3">
+
+                <!-- Category Tiles -->
+                <div class="col-12">
+                  <label class="form-label">Category <span class="req">*</span></label>
+                  <div class="tile-group" id="catTiles">
+                    <label class="tile-option selected">
+                      <input type="radio" name="category" value="fuel" checked onchange="selectTile('catTiles',this)">
+                      ⛽ Fuel
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="category" value="maintenance" onchange="selectTile('catTiles',this)">
+                      🔧 Maintenance
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="category" value="salary" onchange="selectTile('catTiles',this)">
+                      💰 Salary
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="category" value="insurance" onchange="selectTile('catTiles',this)">
+                      🛡️ Insurance
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="category" value="tax" onchange="selectTile('catTiles',this)">
+                      🏛️ Tax
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="category" value="other" onchange="selectTile('catTiles',this)">
+                      📦 Other
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Amount (SAR) <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">💰</span>
+                    <input type="number" name="amount" class="form-control amount-field"
+                      required min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Expense Date</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">📅</span>
+                    <input type="date" name="expenseDate" class="form-control"
+                      value="<%= new Date().toISOString().split('T')[0] %>">
+                  </div>
+                </div>
+
+                <!-- Payment Method Tiles -->
+                <div class="col-12">
+                  <label class="form-label">Payment Method</label>
+                  <div class="tile-group" id="payTiles">
+                    <label class="tile-option selected">
+                      <input type="radio" name="paymentMethod" value="cash" checked onchange="selectTile('payTiles',this)">
+                      💵 Cash
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="paymentMethod" value="bank" onchange="selectTile('payTiles',this)">
+                      🏦 Bank Transfer
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="paymentMethod" value="easypaisa" onchange="selectTile('payTiles',this)">
+                      📱 Easypaisa
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="paymentMethod" value="jazzcash" onchange="selectTile('payTiles',this)">
+                      📱 JazzCash
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="paymentMethod" value="other" onchange="selectTile('payTiles',this)">
+                      📦 Other
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Description</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">📝</span>
+                    <input type="text" name="description" class="form-control"
+                      placeholder="Brief description">
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Paid To</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🧾</span>
+                    <input type="text" name="paidTo" class="form-control"
+                      placeholder="Vendor / Person name">
+                  </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <div class="col-md-6">
+                  <label class="form-label">Related Car <span class="opt-label">(optional)</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🚗</span>
+                    <select name="car" class="form-select">
+                      <option value="">— None —</option>
+                      <% cars.forEach(c => { %>
+                      <option value="<%= c._id %>"><%= c.name %> — <%= c.numberPlate %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Related Driver <span class="opt-label">(optional)</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <select name="driver" class="form-select">
+                      <option value="">— None —</option>
+                      <% drivers.forEach(d => { %>
+                      <option value="<%= d._id %>"><%= d.name %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Notes <span class="opt-label">(optional)</span></label>
+                  <textarea name="notes" class="form-control" rows="3"
+                    placeholder="Additional notes..."></textarea>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Actions ── -->
+          <div class="d-flex align-items-center gap-2 mb-4">
+            <button type="submit" class="btn-submit">✅ Save Expense</button>
+            <a href="/expenses" class="btn-cancel">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function selectTile(groupId, radio) {
+    document.querySelectorAll('#' + groupId + ' .tile-option').forEach(function(t) {
+      t.classList.remove('selected');
+    });
+    radio.closest('.tile-option').classList.add('selected');
+  }
+</script>
+</body>
+</html>

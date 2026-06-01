@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= car.name %> — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Page Header ── */
+    .page-header {
+      display: flex; align-items: center;
+      gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .btn-back {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      text-decoration: none; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-back:hover { background: #f8fafc; color: #475569; }
+    .page-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; flex: 1; }
+
+    /* ── Status Badge ── */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; text-transform: capitalize;
+    }
+    .status-pill.available   { background: #d1e7dd; color: #0a3622; }
+    .status-pill.maintenance { background: #fff9e6; color: #856404; }
+    .status-pill.booked      { background: #fde8e8; color: #7a1616; }
+
+    /* ── Section Cards ── */
+    .section-card {
+      background: white; border-radius: 10px;
+      border: 1px solid #dee2e6; overflow: hidden; margin-bottom: 18px;
+    }
+    .section-header {
+      background: #D85A30; color: white;
+      padding: 0 20px; height: 46px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 14px; font-weight: 600; gap: 8px;
+    }
+    .section-body { padding: 20px; }
+
+    /* ── Car Image ── */
+    .car-img {
+      width: 100%; height: 230px; object-fit: cover;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .car-img-placeholder {
+      width: 100%; height: 180px; background: #f1f5f9;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px; border-bottom: 1px solid #dee2e6;
+    }
+
+    /* ── Info Table ── */
+    .info-table { width: 100%; font-size: 13.5px; border-collapse: collapse; }
+    .info-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table .lbl { color: #94a3b8; font-weight: 500; width: 45%; }
+    .info-table .val { color: #1a1a1a; font-weight: 600; }
+    .info-table .val.green { color: #15803d; }
+    .info-table .val.blue  { color: #1d4ed8; }
+
+    /* ── Plate chip ── */
+    .plate-chip {
+      background: #1a1a1a; color: #fff;
+      padding: 2px 10px; border-radius: 4px;
+      font-family: monospace; font-size: 13px; font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* ── Notes box ── */
+    .notes-box {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 7px; padding: 12px 14px;
+      font-size: 13px; color: #475569; margin-top: 14px;
+    }
+    .notes-box strong { color: #374151; }
+
+    /* ── Pro Table ── */
+    .pro-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .pro-table thead tr { background: #fff8f5; }
+    .pro-table th {
+      padding: 10px 14px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      color: #D85A30; border-bottom: 2px solid #fde8dd;
+      white-space: nowrap;
+    }
+    .pro-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .pro-table tbody tr:hover { background: #fffaf8; }
+    .pro-table tbody tr:last-child td { border-bottom: none; }
+
+    .text-money { font-weight: 600; color: #15803d; white-space: nowrap; }
+    .booking-id { font-weight: 700; color: #D85A30; text-decoration: none; }
+    .booking-id:hover { text-decoration: underline; }
+
+    /* ── Booking Status badges ── */
+    .b-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: capitalize;
+    }
+    .b-badge.confirmed  { background: #d1e7dd; color: #0a3622; }
+    .b-badge.pending    { background: #fff9e6; color: #856404; }
+    .b-badge.completed  { background: #e0e7ff; color: #3730a3; }
+    .b-badge.cancelled  { background: #fee2e2; color: #991b1b; }
+    .b-badge.active     { background: #fde8dd; color: #7a2f00; }
+
+    /* ── Action button ── */
+    .btn-orange {
+      background: #D85A30; color: white; border: none;
+      border-radius: 6px; padding: 5px 14px; font-size: 12px;
+      font-weight: 600; text-decoration: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: background .15s;
+    }
+    .btn-orange:hover { background: #b94a24; color: white; }
+
+    .btn-edit {
+      border: 1px solid #D85A30; color: #D85A30; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      font-weight: 600; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: background .15s, color .15s;
+    }
+    .btn-edit:hover { background: #D85A30; color: white; }
+
+    .empty-row td {
+      text-align: center; padding: 32px 0;
+      color: #b0b8c1; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<% locals.currentPath = '/cars'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <a href="/cars" class="btn-back">← Back</a>
+      <h5 class="page-title"><%= car.name %> — <%= car.numberPlate %></h5>
+      <span class="status-pill <%= car.status %>">● <%= car.status %></span>
+      <% if (currentRole === 'admin') { %>
+        <a href="/cars/<%= car._id %>/edit" class="btn-edit">✏️ Edit</a>
+      <% } %>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- ── Left: Car Info ── -->
+      <div class="col-12 col-md-5">
+        <div class="section-card">
+          <div class="section-header">🚗 Car Details</div>
+
+          <% if (car.carImage) { %>
+            <img src="<%= car.carImage %>" class="car-img" alt="<%= car.name %>">
+          <% } else { %>
+            <div class="car-img-placeholder">🚗</div>
+          <% } %>
+
+          <div class="section-body">
+            <table class="info-table">
+              <tr>
+                <td class="lbl">Make / Model</td>
+                <td class="val"><%= car.name %> <%= car.model %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Year</td>
+                <td class="val"><%= car.year || '—' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Number Plate</td>
+                <td class="val"><span class="plate-chip"><%= car.numberPlate %></span></td>
+              </tr>
+              <tr>
+                <td class="lbl">Color</td>
+                <td class="val"><%= car.color || '—' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Fuel Type</td>
+                <td class="val" style="text-transform:capitalize;"><%= car.fuelType %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Transmission</td>
+                <td class="val" style="text-transform:capitalize;"><%= car.transmission %></td>
+              </tr>
+
+              <!-- ── Booking Type (NEW) ── -->
+              <tr>
+                <td class="lbl">Booking Type</td>
+                <td class="val">
+                  <% if (car.bookingType === 'sharing') { %>
+                    <span style="background:#eff6ff;color:#1d4ed8;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">💺 Sharing (Per Seat)</span>
+                  <% } else { %>
+                    <span style="background:#f0fdf4;color:#15803d;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">🚗 Full Vehicle</span>
+                  <% } %>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="lbl">Seats</td>
+                <td class="val"><%= car.seats %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Rate / Day</td>
+                <td class="val green">SAR <%= car.ratePerDay?.toLocaleString() || '0' %></td>
+              </tr>
+              <tr>
+                <td class="lbl">Total Revenue</td>
+                <td class="val blue">SAR <%= totalRevenue.toLocaleString() %></td>
+              </tr>
+            </table>
+
+            <% if (car.notes) { %>
+              <div class="notes-box">
+                <strong>📝 Notes:</strong> <%= car.notes %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Right: Booking History ── -->
+      <div class="col-12 col-md-7">
+        <div class="section-card">
+          <div class="section-header">
+            <span>📋 Recent Bookings</span>
+            <a href="/bookings/add" class="btn-orange">+ Book This Car</a>
+          </div>
+          <div class="section-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <table class="pro-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Driver</th>
+                    <th>Dates</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (bookings.length === 0) { %>
+                    <tr class="empty-row">
+                      <td colspan="6">🚗 No bookings yet for this car</td>
+                    </tr>
+                  <% } %>
+                  <% bookings.forEach(b => { %>
+                  <tr>
+                    <td>
+                      <a href="/bookings/<%= b._id %>" class="booking-id">
+                        <%= b.bookingId %>
+                      </a>
+                    </td>
+                    <td><%= b.customerName %></td>
+                    <td><%= b.driver ? b.driver.name : '—' %></td>
+                    <td style="font-size:12px;color:#64748b;">
+                      <%= new Date(b.startDate).toLocaleDateString() %> →
+                      <%= new Date(b.endDate).toLocaleDateString() %>
+                    </td>
+                    <td class="text-money">SAR <%= b.totalAmount?.toLocaleString() %></td>
+                    <td>
+                      <span class="b-badge <%= b.status %>"><%= b.status %></span>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

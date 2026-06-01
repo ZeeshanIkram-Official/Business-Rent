@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= title %> — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .page-header {
+      display: flex; align-items: center;
+      gap: 12px; margin-bottom: 24px;
+    }
+    .btn-back {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 6px; padding: 5px 14px; font-size: 13px;
+      text-decoration: none; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-back:hover { background: #f8fafc; color: #475569; }
+    .page-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; }
+
+    .section-card {
+      background: white; border-radius: 10px;
+      border: 1px solid #dee2e6; overflow: hidden; margin-bottom: 18px;
+    }
+    .section-header {
+      background: #D85A30; color: white;
+      padding: 0 20px; height: 46px;
+      display: flex; align-items: center;
+      font-size: 14px; font-weight: 600; gap: 8px;
+    }
+    .section-body { padding: 20px; }
+
+    .form-label {
+      font-size: 12px; font-weight: 600;
+      color: #374151; margin-bottom: 5px;
+    }
+    .form-label .req { color: #D85A30; margin-left: 2px; }
+    .form-control, .form-select {
+      border: 1px solid #dee2e6; border-radius: 7px;
+      font-size: 13px; padding: 8px 11px;
+      color: #1a1a1a; background: #fafafa;
+      transition: border-color .15s, background .15s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #D85A30; background: white;
+      box-shadow: 0 0 0 3px rgba(216,90,48,.1); outline: none;
+    }
+    .form-control::placeholder { color: #b0b8c1; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon {
+      position: absolute; left: 11px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px; pointer-events: none;
+    }
+    .input-wrap .form-control,
+    .input-wrap .form-select { padding-left: 34px; }
+
+    .tile-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tile-option {
+      border: 2px solid #dee2e6; border-radius: 8px;
+      padding: 8px 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; font-weight: 500; color: #475569;
+      transition: border-color .12s, background .12s;
+      white-space: nowrap;
+    }
+    .tile-option input[type="radio"] { display: none; }
+    .tile-option.selected {
+      border-color: #D85A30; background: #fff8f5; color: #7a2f00;
+    }
+
+    .upload-area {
+      border: 2px dashed #dee2e6; border-radius: 10px;
+      padding: 24px 16px; text-align: center;
+      cursor: pointer; transition: border-color .15s, background .15s;
+      background: #fafafa; position: relative;
+    }
+    .upload-area:hover { border-color: #D85A30; background: #fff8f5; }
+    .upload-area input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-label { font-size: 13px; font-weight: 600; color: #374151; }
+    .upload-hint  { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+    #imgPreview {
+      display: none; max-height: 160px; border-radius: 8px;
+      margin-top: 12px; border: 1px solid #dee2e6; width: 100%; object-fit: cover;
+    }
+
+    .rate-field { background: #f0fdf4 !important; color: #15803d !important; font-weight: 600; }
+    .rate-field:focus { border-color: #16a34a !important; box-shadow: 0 0 0 3px rgba(22,163,74,.1) !important; }
+
+    .status-available   { background: #d1e7dd !important; color: #0a3622 !important; font-weight: 600; }
+    .status-maintenance { background: #fff9e6 !important; color: #856404 !important; font-weight: 600; }
+
+    .btn-submit {
+      background: #D85A30; color: white; border: none;
+      border-radius: 7px; padding: 11px 36px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px;
+      transition: background .15s;
+    }
+    .btn-submit:hover { background: #b94a24; }
+    .btn-cancel {
+      border: 1px solid #dee2e6; color: #475569; background: white;
+      border-radius: 7px; padding: 11px 20px;
+      font-size: 14px; text-decoration: none; font-weight: 500;
+    }
+    .btn-cancel:hover { background: #f8fafc; color: #475569; }
+  </style>
+</head>
+<body>
+<% locals.currentPath = '/cars'; %>
+<%- include('../partials/sidebar') %>
+<div class="main-wrapper">
+  <%- include('../partials/topbar') %>
+  <div class="content-area">
+    <%- include('../partials/flash') %>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-9">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <a href="/cars" class="btn-back">← Back</a>
+          <h5 class="page-title">Add New Car</h5>
+        </div>
+
+        <form action="/cars" method="POST" enctype="multipart/form-data">
+
+          <!-- ── Basic Information ── -->
+          <div class="section-card">
+            <div class="section-header">🚗 Basic Information</div>
+            <div class="section-body">
+              <div class="row g-3">
+
+                <div class="col-md-4">
+                  <label class="form-label">Car Name / Make <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🚗</span>
+                    <input type="text" name="name" class="form-control"
+                      placeholder="e.g. Toyota Corolla" required>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Model <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🏷️</span>
+                    <input type="text" name="model" class="form-control"
+                      placeholder="e.g. GLi, XLi" required>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Year</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">📅</span>
+                    <input type="number" name="year" class="form-control"
+                      placeholder="e.g. 2022" min="1990" max="2030">
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Number Plate <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🪪</span>
+                    <input type="text" name="numberPlate" class="form-control"
+                      placeholder="e.g. ABC-123" required>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Color</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">🎨</span>
+                    <input type="text" name="color" class="form-control" placeholder="e.g. White">
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Seats</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">💺</span>
+                    <input type="number" name="seats" class="form-control"
+                      value="5" min="2" max="50">
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Technical Details ── -->
+          <div class="section-card">
+            <div class="section-header">⚙️ Technical Details</div>
+            <div class="section-body">
+              <div class="row g-3">
+
+                <!-- Fuel Type -->
+                <div class="col-12">
+                  <label class="form-label">Fuel Type</label>
+                  <div class="tile-group" id="fuelTiles">
+                    <label class="tile-option selected">
+                      <input type="radio" name="fuelType" value="petrol" checked onchange="selectTile('fuelTiles',this)">
+                      ⛽ Petrol
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="fuelType" value="diesel" onchange="selectTile('fuelTiles',this)">
+                      🛢️ Diesel
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="fuelType" value="cng" onchange="selectTile('fuelTiles',this)">
+                      🟢 CNG
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="fuelType" value="hybrid" onchange="selectTile('fuelTiles',this)">
+                      🔋 Hybrid
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="fuelType" value="electric" onchange="selectTile('fuelTiles',this)">
+                      ⚡ Electric
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Transmission -->
+                <div class="col-12">
+                  <label class="form-label">Transmission</label>
+                  <div class="tile-group" id="transTiles">
+                    <label class="tile-option selected">
+                      <input type="radio" name="transmission" value="manual" checked onchange="selectTile('transTiles',this)">
+                      🔧 Manual
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="transmission" value="automatic" onchange="selectTile('transTiles',this)">
+                      🤖 Automatic
+                    </label>
+                  </div>
+                </div>
+
+                <!-- ── Booking Type (NEW) ── -->
+                <div class="col-12">
+                  <label class="form-label">Booking Type</label>
+                  <div class="tile-group" id="bookingTiles">
+                    <label class="tile-option selected">
+                      <input type="radio" name="bookingType" value="full" checked onchange="selectTile('bookingTiles',this)">
+                      🚗 Full Vehicle
+                    </label>
+                    <label class="tile-option">
+                      <input type="radio" name="bookingType" value="sharing" onchange="selectTile('bookingTiles',this)">
+                      💺 Sharing (Per Seat)
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Rate Per Day (SAR)</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">💰</span>
+                    <input type="number" name="ratePerDay" class="form-control rate-field"
+                      placeholder="0" min="0">
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Status</label>
+                  <select name="status" class="form-select status-available" id="statusSelect"
+                    onchange="updateStatusStyle(this)">
+                    <option value="available">✅ Available</option>
+                    <option value="maintenance">🔧 Maintenance</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Image & Notes ── -->
+          <div class="section-card">
+            <div class="section-header">📷 Image & Notes</div>
+            <div class="section-body">
+              <div class="row g-3">
+
+                <div class="col-md-6">
+                  <label class="form-label">Car Image</label>
+                  <div class="upload-area" id="uploadArea">
+                    <input type="file" name="carImage" accept="image/*"
+                      onchange="preview(this)" id="fileInput">
+                    <div id="uploadPlaceholder">
+                      <div class="upload-icon">🚗</div>
+                      <div class="upload-label">Click to upload car photo</div>
+                      <div class="upload-hint">JPG, PNG, WEBP — max 5MB</div>
+                    </div>
+                    <img id="imgPreview" alt="Car preview">
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Notes <small style="font-weight:400;color:#94a3b8;">(optional)</small></label>
+                  <textarea name="notes" class="form-control" rows="6"
+                    placeholder="Any additional notes about this car..."></textarea>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Actions ── -->
+          <div class="d-flex align-items-center gap-2 mb-4">
+            <button type="submit" class="btn-submit">✅ Add Car</button>
+            <a href="/cars" class="btn-cancel">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function preview(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('imgPreview');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function selectTile(groupId, radio) {
+    document.querySelectorAll('#' + groupId + ' .tile-option').forEach(function(t) {
+      t.classList.remove('selected');
+    });
+    radio.closest('.tile-option').classList.add('selected');
+  }
+
+  function updateStatusStyle(sel) {
+    sel.className = 'form-select ' + (sel.value === 'available' ? 'status-available' : 'status-maintenance');
+  }
+</script>
+</body>
+</html>

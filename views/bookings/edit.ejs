@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Booking — TransPort Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <% locals.currentPath='/bookings'; %>
+  <%- include('../partials/sidebar') %>
+  <div class="main-wrapper">
+    <%- include('../partials/topbar') %>
+    <div class="content-area">
+      <%- include('../partials/flash') %>
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="/bookings/<%= booking._id %>" class="btn btn-outline-secondary btn-sm">← Back</a>
+            <h5 class="mb-0 fw-bold">✏️ Edit Booking — <%= booking.bookingId %></h5>
+          </div>
+
+          <form action="/bookings/<%= booking._id %>?_method=PUT" method="POST">
+
+            <!-- Route -->
+            <div class="form-section">
+              <div class="form-section-header">🗺️ Route</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Select Route</label>
+                    <select name="route" id="routeSelect" class="form-select" onchange="fillRouteData(this)">
+                      <option value="">-- Route select karein --</option>
+                      <% routes.forEach(r => { %>
+                        <option value="<%= r._id %>"
+                          data-price="<%= r.price || 0 %>"
+                          data-origin="<%= r.origin %>"
+                          data-dest="<%= r.destination %>"
+                          <%= booking.route && booking.route._id && booking.route._id.toString() === r._id.toString() ? 'selected' : '' %>>
+                          <%= r.origin %> → <%= r.destination %>
+                          <% if (r.company) { %> (<%= r.company %>) <% } %>
+                          — SAR <%= (r.price || 0).toLocaleString() %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Pickup (From)</label>
+                    <input type="text" name="pickupLocation" id="pickupLocation" class="form-control"
+                      value="<%= booking.pickupLocation || '' %>">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Dropoff (To)</label>
+                    <input type="text" name="dropoffLocation" id="dropoffLocation" class="form-control"
+                      value="<%= booking.dropoffLocation || '' %>">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer -->
+            <div class="form-section">
+              <div class="form-section-header">👤 Customer Information</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Customer Name *</label>
+                    <input type="text" name="customerName" class="form-control" required value="<%= booking.customerName %>">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Phone *</label>
+                    <input type="text" name="customerPhone" class="form-control" required value="<%= booking.customerPhone %>">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Passengers</label>
+                    <input type="number" name="passengers" class="form-control" value="<%= booking.passengers || 1 %>" min="1">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">CNIC</label>
+                    <input type="text" name="customerCnic" class="form-control" value="<%= booking.customerCnic || '' %>">
+                  </div>
+                  <div class="col-md-8">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="customerAddress" class="form-control" value="<%= booking.customerAddress || '' %>">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Travel -->
+            <div class="form-section">
+              <div class="form-section-header">📅 Travel Details</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Travel Date *</label>
+                    <input type="date" name="travelDate" class="form-control" required
+                      value="<%= booking.travelDate ? moment(booking.travelDate).format('YYYY-MM-DD') : '' %>">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Select Car *</label>
+                    <select name="car" class="form-select" required>
+                      <% cars.forEach(c => { %>
+                        <option value="<%= c._id %>"
+                          <%= booking.car && booking.car._id && booking.car._id.toString() === c._id.toString() ? 'selected' : '' %>>
+                          <%= c.name %> <%= c.model %> — <%= c.numberPlate %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Driver</label>
+                    <select name="driver" class="form-select">
+                      <option value="">-- No Driver --</option>
+                      <% drivers.forEach(d => { %>
+                        <option value="<%= d._id %>"
+                          <%= booking.driver && booking.driver._id && booking.driver._id.toString() === d._id.toString() ? 'selected' : '' %>>
+                          <%= d.name %> — <%= d.phone %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="form-section">
+              <div class="form-section-header">💰 Payment Details</div>
+              <div class="form-section-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label fw-semibold">Trip Fare (SAR)</label>
+                    <input type="number" name="tripFare" id="tripFare" class="form-control form-control-lg"
+                      value="<%= booking.tripFare || 0 %>" min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Extra Charges (SAR)</label>
+                    <input type="number" name="extraCharges" id="extraCharges" class="form-control"
+                      value="<%= booking.extraCharges || 0 %>" min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Discount (SAR)</label>
+                    <input type="number" name="discount" id="discount" class="form-control"
+                      value="<%= booking.discount || 0 %>" min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Total Amount (SAR)</label>
+                    <input type="text" id="totalDisplay" class="form-control fw-bold" readonly
+                      style="background:#f0fdf4;color:#15803d;font-size:16px;">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Advance Paid (SAR)</label>
+                    <input type="number" name="advancePaid" id="advancePaid" class="form-control"
+                      value="<%= booking.advancePaid || 0 %>" min="0" onchange="calcAmount()" oninput="calcAmount()">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Remaining (SAR)</label>
+                    <input type="text" id="remainingDisplay" class="form-control" readonly
+                      style="background:#fef2f2;color:#dc2626;font-weight:700;">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Payment Method</label>
+                    <select name="paymentMethod" class="form-select">
+                      <option value="cash"      <%= booking.paymentMethod==='cash'      ? 'selected':'' %>>💵 Cash</option>
+                      <option value="bank"      <%= booking.paymentMethod==='bank'      ? 'selected':'' %>>🏦 Bank Transfer</option>
+                      <option value="easypaisa" <%= booking.paymentMethod==='easypaisa' ? 'selected':'' %>>📱 Easypaisa</option>
+                      <option value="jazzcash"  <%= booking.paymentMethod==='jazzcash'  ? 'selected':'' %>>📱 JazzCash</option>
+                      <option value="other"     <%= booking.paymentMethod==='other'     ? 'selected':'' %>>Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Booking Status</label>
+                    <select name="status" class="form-select">
+                      <option value="pending"   <%= booking.status==='pending'   ? 'selected':'' %>>Pending</option>
+                      <option value="confirmed" <%= booking.status==='confirmed' ? 'selected':'' %>>Confirmed</option>
+                      <option value="ongoing"   <%= booking.status==='ongoing'   ? 'selected':'' %>>Ongoing</option>
+                      <option value="completed" <%= booking.status==='completed' ? 'selected':'' %>>Completed</option>
+                      <option value="cancelled" <%= booking.status==='cancelled' ? 'selected':'' %>>Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-section">
+              <div class="form-section-header">📝 Notes</div>
+              <div class="form-section-body">
+                <textarea name="notes" class="form-control" rows="3"><%= booking.notes || '' %></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary px-5">💾 Update Booking</button>
+              <a href="/bookings/<%= booking._id %>" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function fillRouteData(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.value) return;
+      const price  = opt.dataset.price  || '';
+      const origin = opt.dataset.origin || '';
+      const dest   = opt.dataset.dest   || '';
+      if (price)  document.getElementById('tripFare').value        = price;
+      if (origin) document.getElementById('pickupLocation').value  = origin;
+      if (dest)   document.getElementById('dropoffLocation').value = dest;
+      calcAmount();
+    }
+
+    function calcAmount() {
+      const fare    = parseFloat(document.getElementById('tripFare').value)     || 0;
+      const extra   = parseFloat(document.getElementById('extraCharges').value) || 0;
+      const disc    = parseFloat(document.getElementById('discount').value)     || 0;
+      const total   = Math.max(0, fare + extra - disc);
+      const advance = parseFloat(document.getElementById('advancePaid').value)  || 0;
+      const rem     = Math.max(0, total - advance);
+      document.getElementById('totalDisplay').value     = 'SAR ' + total.toLocaleString();
+      document.getElementById('remainingDisplay').value = 'SAR ' + rem.toLocaleString();
+    }
+
+    calcAmount();
+  </script>
+</body>
+</html>

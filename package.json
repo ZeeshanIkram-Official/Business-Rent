@@ -1,0 +1,32 @@
+{
+  "name": "transport-management-system",
+  "version": "2.0.0",
+  "description": "Professional Transport Car & Driver Rental Management System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "transport",
+    "car rental",
+    "driver management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-flash": "^0.1.1",
+    "ejs": "^3.1.10",
+    "epress": "^0.0.1-security",
+    "express": "^4.21.2",
+    "express-session": "^1.19.0",
+    "method-override": "^3.0.0",
+    "moment": "^2.30.1",
+    "mongoose": "^9.3.3",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
